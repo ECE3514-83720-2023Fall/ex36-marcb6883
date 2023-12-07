@@ -86,7 +86,20 @@ void BSTDictionary<KeyType, ValueType>::clear()
     std::stack<Node<KeyType, ValueType> *> s;
     s.push(root);
     
-    // TODO -- implement clear
+    while (!s.empty()) {
+        Node<KeyType, ValueType>* current = s.top();
+        s.pop(); // get rid of the top element from the stack
+
+        if (current) {
+            s.push(current->left); // left side of tree pushed into s
+            s.push(current->right); // right side of tree 
+
+            delete current;
+        }
+    }
+
+    root = nullptr; // get rid of root
+    m_size = 0; // set the size to 0
  
 }
 
@@ -110,13 +123,34 @@ void BSTDictionary<KeyType, ValueType>::add(const KeyType &key,
 {
     Node<KeyType, ValueType> *curr;
     Node<KeyType, ValueType> *curr_parent;
+
     if (!isEmpty()) {
-        search(key, curr, curr_parent);
-        if (curr->key == key)
+        search(key, curr, curr_parent); // does the key already exist?
+        if (curr != nullptr && curr->key == key) { // exception was thrown here when nullptr
             throw std::logic_error("Duplicate key in add");
+        }
     }
     
     // TODO -- implement add
+    Node<KeyType, ValueType>* newNode = new Node<KeyType, ValueType>; // create a new node
+    newNode->key = key;
+    newNode->data = item;
+    newNode->left = nullptr;
+    newNode->right = nullptr;
+    // is key empty?
+    if (isEmpty()) {
+        root = newNode; // make a new node
+    }
+    else {
+        if (key < curr_parent->key) { // use the binary search tree rules
+            curr_parent->left = newNode;
+        }
+        else {
+            curr_parent->right = newNode;
+        }
+    }
+
+    m_size++; // inc size when added
  
 }
 
@@ -148,7 +182,7 @@ void BSTDictionary<KeyType, ValueType>::remove(const KeyType &key) {
     Node<KeyType, ValueType> *curr_parent;
     search(key, curr, curr_parent);
     
-    if (curr->key != key) {
+    if (curr == nullptr || curr->key != key) {
         throw std::logic_error("Nonexistant key in remove");
     }
     
@@ -224,6 +258,12 @@ void BSTDictionary<KeyType, ValueType>::inorder(
     in = curr->right; // move right once
     
     // TODO -- implement inorder
+    // Adter moving right once, you keekp moving left until you get to the end
+    // that is determined by keeping going until you hit the nullptr
+    while (in->left != nullptr) {
+        parent = in;
+        in = in->left;
+    }
     
 }
 
@@ -235,12 +275,24 @@ void BSTDictionary<KeyType, ValueType>::search(
     curr = root;
     parent = nullptr;
     
-    if (isEmpty())
-        return;
+    //if (isEmpty())
+    //    return;
     
     // TODO -- implement search
     // want to do a search of the tree
     // return the node that has the key and a pointer to its parent
     // else where the node would go in the BST
+ 
+    // while it isn't equal to key
+    // or it hasn't reached the end
+    while (curr != nullptr && curr->key != key) {
+        parent = curr; // if not found key will point to where it should be inserted
+        if (key < curr->key) {
+            curr = curr->left;
+        }
+        else {
+            curr = curr->right;
+        }
+    }
     
 }
